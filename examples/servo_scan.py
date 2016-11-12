@@ -27,9 +27,12 @@ import herkulex
 from herkulex import servo
 
 #connect to the serial port
+#first is the serial port, probably /dev/ttyUSB0 is=f your are using linux and e.g. COM3 if you are using Windows
+#second argument is the baud rate, 115200 is teh default value
 herkulex.connect("/dev/ttyUSB0",115200)
 
 #scan for servos, it returns a tuple with servo id & model number
-servos = herkulex.scan_servos()
+#optionnal argument doPrint allows to check what is happening
+servos = herkulex.scan_servos(doPrint=True)
 
 print servos

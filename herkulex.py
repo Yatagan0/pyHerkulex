@@ -240,7 +240,6 @@ def send_data(data):
 
         SERPORT.write(stringtosend.decode('string-escape'))
         #print stringtosend
-
     except:
         raise HerkulexError("could not communicate with motors")
 
@@ -273,23 +272,30 @@ def scale(input_value, input_min, input_max, out_min, out_max):
     # Convert the 0-1 range into a value in the right range.
     return out_min + (valuescaled * output_span)
 
-def scan_servos():
+def scan_servos(doPrint=False):
 
     """Scan for the herkulex servos connected
 
-	This function will scan for all the herkulex servos connected
-	to the bus.
+    This function will scan for all the herkulex servos connected
+    to the bus.
 
-	Args:
-	    none
-	Returns:
-	    list: a list of tuples of the form [(id, model)]
-	"""
+    Args:
+        none
+    Returns:
+        list: a list of tuples of the form [(id, model)]
+    """
     servos = []
     for servo_id in range(0x00, 0xFE):
-        model = get_model(servo_id)
-        if model:
-            servos += [(servo_id, model)]
+        if doPrint:
+            print "scanning id "+str(servo_id)
+        try:
+            model = get_model(servo_id)
+            if model:
+                if doPrint:
+                    print "found id "+str(servo_id)
+                servos += [(servo_id, model)]
+        except:
+            pass
     return servos
 
 def get_model(servoid):
@@ -312,13 +318,14 @@ def get_model(servoid):
     data.append(EEP_READ_REQ)
     data.append(MODEL_NO1_EEP)
     data.append(BYTE1)
-    send_data(data)
-    rxdata = []
     try:
+        send_data(data)
+        rxdata = []
         rxdata = SERPORT.read(12)
         return ord(rxdata[9])&0xFF
-    except:
+    except Exception, e:
         raise HerkulexError("could not communicate with motors")
+
 
 class servo:
     """ The servo class
@@ -331,13 +338,11 @@ class servo:
     def __init__(self, servoid):
         """ servo class initialization
 
-   	Args:
-   	    servoid(int): the id of the servo
-   	"""
+        Args:
+            servoid(int): the id of the servo
+        """
         self.servoid = servoid
-
-
-        self.servomodel = get_model(servoid):
+        self.servomodel = get_model(servoid)
 
 
 
@@ -355,11 +360,6 @@ class servo:
                   0x04 for DRS-402
                   0x02 for DRS-202
         """
-
-
-
-
-
         data = []
         data.append(0x09)
         data.append(self.servoid)
